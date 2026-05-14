@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Galería de imágenes segura con Amazon S3 y Presigned URLs — Laboratorio Semana 9" />
+  <title>S3 Gallery — Galería de Imágenes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ───────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header__inner">
+      <div class="header__brand">
+        <span class="header__icon">☁️</span>
+        <div>
+          <h1 class="header__title">S3 Gallery</h1>
+          <p class="header__subtitle">Amazon S3 · Presigned URLs · Lab Semana 9</p>
+        </div>
+      </div>
+      <div class="header__badge" id="bucketBadge">Conectando…</div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ─────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- UPLOAD CARD -->
+    <section class="upload-card" aria-labelledby="uploadTitle">
+      <h2 class="upload-card__title" id="uploadTitle">
+        <span>📤</span> Subir Imagen
+      </h2>
+
+      <!-- Zona drag & drop -->
+      <div class="drop-zone" id="dropZone" role="button" tabindex="0"
+           aria-label="Zona de arrastre de imágenes. Haz clic o arrastra un archivo aquí.">
+        <div class="drop-zone__icon">🖼️</div>
+        <p class="drop-zone__text">Arrastra tu imagen aquí</p>
+        <p class="drop-zone__hint">o haz clic para seleccionar</p>
+        <p class="drop-zone__formats">JPEG · PNG · WebP · Máx. 5 MB</p>
+        <input type="file" id="fileInput" class="drop-zone__input"
+               accept="image/jpeg,image/png,image/webp"
+               aria-label="Seleccionar archivo de imagen" />
+      </div>
+
+      <!-- Preview del archivo seleccionado -->
+      <div class="file-preview" id="filePreview" hidden>
+        <img class="file-preview__thumb" id="previewThumb" src="" alt="Vista previa" />
+        <div class="file-preview__info">
+          <p class="file-preview__name" id="previewName"></p>
+          <p class="file-preview__size" id="previewSize"></p>
+        </div>
+        <button class="file-preview__clear" id="clearFile" aria-label="Quitar archivo seleccionado">✕</button>
+      </div>
+
+      <!-- Barra de progreso -->
+      <div class="progress-bar" id="progressBar" hidden>
+        <div class="progress-bar__track">
+          <div class="progress-bar__fill" id="progressFill"></div>
+        </div>
+        <span class="progress-bar__label" id="progressLabel">Subiendo…</span>
+      </div>
+
+      <!-- Botón de carga -->
+      <button class="btn btn--primary" id="uploadBtn" disabled>
+        <span class="btn__icon">⬆️</span>
+        <span class="btn__text">Subir a S3</span>
+      </button>
+    </section>
+
+    <!-- GALLERY SECTION -->
+    <section class="gallery-section" aria-labelledby="galleryTitle">
+      <div class="gallery-section__header">
+        <h2 class="gallery-section__title" id="galleryTitle">
+          <span>🖼️</span> Galería
+        </h2>
+        <button class="btn btn--ghost" id="refreshBtn" aria-label="Recargar galería">
+          <span>🔄</span> Recargar
+        </button>
+      </div>
+
+      <!-- Estado de carga / vacío / error -->
+      <div class="gallery-status" id="galleryStatus">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Cargando imágenes…</p>
+      </div>
+
+      <!-- Grid de imágenes -->
+      <div class="gallery-grid" id="galleryGrid" aria-live="polite" aria-label="Galería de imágenes"></div>
+    </section>
+
+  </main>
+
+  <!-- ── TOAST DE NOTIFICACIONES ──────────────────────────────── -->
+  <div class="toast-container" id="toastContainer" aria-live="assertive"></div>
+
+  <!-- ── MODAL DE CONFIRMACIÓN ────────────────────────────────── -->
+  <div class="modal-overlay" id="modalOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal__icon">🗑️</div>
+      <h3 class="modal__title" id="modalTitle">Eliminar imagen</h3>
+      <p class="modal__body">¿Estás seguro? Esta acción no se puede deshacer.</p>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" id="modalCancel">Cancelar</button>
+        <button class="btn btn--danger" id="modalConfirm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
