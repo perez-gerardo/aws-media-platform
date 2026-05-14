@@ -76,14 +76,14 @@ const API = {
       throw new Error(data.error || `Error del servidor: ${res.status}`);
     }
 
-    return res.json(); // { uploadUrl, key }
+    return res.json(); // { uploadUrl, key, requiredHeaders }
   },
 
   /**
    * Sube el archivo DIRECTAMENTE a S3 usando la presigned URL.
    * El archivo NO pasa por el backend: va navegador → S3.
    */
-  async uploadToS3(uploadUrl, file, onProgress) {
+  async uploadToS3(uploadUrl, file, requiredHeaders, onProgress) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -94,14 +94,22 @@ const API = {
       });
 
       xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(`S3 respondió con status ${xhr.status}`));
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          // Log the full S3 XML error response for debugging
+          console.error('S3 Error Response:', xhr.responseText);
+          reject(new Error(`S3 respondió con status ${xhr.status}`));
+        }
       });
 
       xhr.addEventListener('error', () => reject(new Error('Error de red al subir a S3.')));
 
       xhr.open('PUT', uploadUrl);
       xhr.setRequestHeader('Content-Type', file.type);
+      if (requiredHeaders) {
+        Object.entries(requiredHeaders).forEach(([h, v]) => xhr.setRequestHeader(h, v));
+      }
       xhr.send(file);
     });
   },
@@ -328,11 +336,11 @@ async function uploadFile() {
   try {
     // 2. Pedir presigned URL (el backend re-valida también)
     UI.toast('Generando URL segura…', 'info');
-    const { uploadUrl } = await API.requestUploadUrl(selectedFile);
+    const { uploadUrl, requiredHeaders } = await API.requestUploadUrl(selectedFile);
 
     // 3. PUT directo a S3 (las credenciales NUNCA llegan al navegador)
     UI.toast('Subiendo a S3…', 'info');
-    await API.uploadToS3(uploadUrl, selectedFile, (pct) => UI.showProgress(pct));
+    await API.uploadToS3(uploadUrl, selectedFile, requiredHeaders, (pct) => UI.showProgress(pct));
 
     UI.toast('¡Imagen subida con éxito! 🎉', 'success');
     UI.clearPreview();

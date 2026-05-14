@@ -33,7 +33,13 @@ async function generateUploadUrl(filename, contentType) {
   });
 
   const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: UPLOAD_URL_EXPIRY });
-  return { uploadUrl, key };
+
+  // Estos headers DEBEN incluirse en el PUT del browser para que la firma coincida
+  const requiredHeaders = {
+    'x-amz-server-side-encryption': 'AES256',
+  };
+
+  return { uploadUrl, key, requiredHeaders };
 }
 
 async function listImages() {
